@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"pgstore"
+	"github.com/jamiecrisman/pgstore"
 )
 
 // ExampleHandler is an example that displays the usage of PGStore.

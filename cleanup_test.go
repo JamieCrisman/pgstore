@@ -13,7 +13,7 @@ func TestCleanup(t *testing.T) {
 		t.Skip("This test requires a real database.")
 	}
 
-	ss, err := NewPGStore(dsn, []byte(secret))
+	ss, err := NewPGStore(dsn, http.SameSiteDefaultMode, false, []byte(secret))
 	if err != nil {
 		t.Fatal("Failed to get store", err)
 	}
