@@ -36,24 +36,30 @@ type PGSession struct {
 
 // NewPGStore creates a new PGStore instance and a new database/sql pool.
 // This will also create in the database the schema needed by pgstore.
-func NewPGStore(dbURL string, keyPairs ...[]byte) (*PGStore, error) {
+func NewPGStore(dbURL string, httpss http.SameSite, secure bool, keyPairs ...[]byte) (*PGStore, error) {
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		// Ignore and return nil.
 		return nil, err
 	}
-	return NewPGStoreFromPool(db, keyPairs...)
+	return NewPGStoreFromPool(db, httpss, secure, keyPairs...)
 }
 
 // NewPGStoreFromPool creates a new PGStore instance from an existing
 // database/sql pool.
 // This will also create the database schema needed by pgstore.
-func NewPGStoreFromPool(db *sql.DB, keyPairs ...[]byte) (*PGStore, error) {
+//
+// httpss for http.SameSite config
+// secure for if you're using https or not
+func NewPGStoreFromPool(db *sql.DB, httpss http.SameSite, secure bool, keyPairs ...[]byte) (*PGStore, error) {
 	dbStore := &PGStore{
 		Codecs: securecookie.CodecsFromPairs(keyPairs...),
 		Options: &sessions.Options{
-			Path:   "/",
-			MaxAge: 86400 * 30,
+			Path:     "/",
+			MaxAge:   86400 * 30,
+			HttpOnly: true,
+			SameSite: httpss,
+			Secure:   secure,
 		},
 		DbPool: db,
 	}
@@ -242,6 +248,8 @@ func (db *PGStore) createSessionsTable() error {
                   RAISE;
                 END IF;
               WHEN others THEN RAISE;
+			  CREATE INDEX IF NOT EXISTS http_sessions_expiry_idx ON http_sessions (expires_on);
+			  CREATE INDEX IF NOT EXISTS http_sessions_key_idx ON http_sessions (key);
               END;
               $$;`
 

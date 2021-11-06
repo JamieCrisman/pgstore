@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/antonlindstrom/pgstore"
+	"pgstore"
 )
 
 // ExampleHandler is an example that displays the usage of PGStore.
 func ExampleHandler(w http.ResponseWriter, r *http.Request) {
 	// Fetch new store.
-	store, err := pgstore.NewPGStore("postgres://user:password@127.0.0.1:5432/database?sslmode=verify-full", []byte("secret-key"))
+	store, err := pgstore.NewPGStore("postgres://user:password@127.0.0.1:5432/database?sslmode=verify-full", http.SameSiteNoneMode, false, []byte("secret-key"))
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
